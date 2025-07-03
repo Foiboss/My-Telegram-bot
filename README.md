@@ -133,7 +133,6 @@ My-Telegram-bot/
 │   │   ├── Photos/             # Изображения оформления сообщения в чате бота
 │   │   └── handlers/           # Хэндлеры команд и FSM (activities, admin, antispam, auth, export, users)
 │   │       ├── activities.py   # Логика работы с внеурочными активностями (заявки)
-│   │       ├── antispam.py     # Логика работы антиспам плагина
 │   │       ├── admin.py        # Команды администратора (login/logout, создание/удаление учётных записей)
 │   │       ├── antispam.py     # Логика работы антиспам плагина
 │   │       ├── auth.py         # Вход, выход из аккаунта (уровеня student, curator)
