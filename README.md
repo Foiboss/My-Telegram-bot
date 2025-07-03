@@ -275,8 +275,8 @@ My-Telegram-bot/
  <summary>📷 Показать диаграммы</summary>
  
  ![Image](https://github.com/user-attachments/assets/c2cdec17-2d64-451b-abfe-d82128ba8515)
- 
- ![Image](https://github.com/user-attachments/assets/644ef4ea-bc24-41da-ad82-d810510262eb)
+ ![Image](https://github.com/user-attachments/assets/a104b93a-1b06-4285-bb3b-a03c86b743c7)
+ ![Image](https://github.com/user-attachments/assets/d3a3cf23-9219-411d-98ea-afcb6b193607)
 
 </details>
 
