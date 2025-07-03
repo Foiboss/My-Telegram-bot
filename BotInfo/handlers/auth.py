@@ -74,31 +74,31 @@ async def cmd_start(msg: types.Message, **kwargs):
     remember_bot_msg(msg.chat.id, sent.message_id)
 
 
-@router_auth.message(lambda msg: msg.text == '👥 Сгенерировать студента и куратора')
-@antispam(timedelta(minutes=2))
-async def gen_two_creds(msg: types.Message, **kwargs):
-    await delete_prev(msg.chat.id, msg.bot)
-    text = '✅ Сохраните эти данные надёжно:\n'
-
-    # student
-    login = gen_password()
-    password = gen_password()
-    await execute(
-        'INSERT INTO users(telegram_id,username,full_name,role,password) VALUES(?,?,?,?,?)',
-        (None, login, 'Фамилия Имя Отчество', 'student', password)
-    )
-    text += f'Student: {login} - {password}\n'
-
-    # curator
-    login = gen_password()
-    password = gen_password()
-    await execute(
-        'INSERT INTO users(telegram_id,username,full_name,role,password) VALUES(?,?,?,?,?)',
-        (None, login, 'Фамилия Имя Отчество', 'curator', password)
-    )
-    text += f'Curator: {login} - {password}\n'
-
-    await msg.answer(text, reply_markup=main)
+# @router_auth.message(lambda msg: msg.text == '👥 Сгенерировать студента и куратора')
+# @antispam(timedelta(minutes=2))
+# async def gen_two_creds(msg: types.Message, **kwargs):
+#     await delete_prev(msg.chat.id, msg.bot)
+#     text = '✅ Сохраните эти данные надёжно:\n'
+#
+#     # student
+#     login = gen_password()
+#     password = gen_password()
+#     await execute(
+#         'INSERT INTO users(telegram_id,username,full_name,role,password) VALUES(?,?,?,?,?)',
+#         (None, login, 'Фамилия Имя Отчество', 'student', password)
+#     )
+#     text += f'Student: {login} - {password}\n'
+# 
+#     # curator
+#     login = gen_password()
+#     password = gen_password()
+#     await execute(
+#         'INSERT INTO users(telegram_id,username,full_name,role,password) VALUES(?,?,?,?,?)',
+#         (None, login, 'Фамилия Имя Отчество', 'curator', password)
+#     )
+#     text += f'Curator: {login} - {password}\n'
+#
+#     await msg.answer(text, reply_markup=main)
 
 
 
