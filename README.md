@@ -274,6 +274,7 @@ My-Telegram-bot/
 
  <summary>📷 Показать диаграммы</summary>
 
+
  **Студент:**
  ![Image](https://github.com/user-attachments/assets/c2cdec17-2d64-451b-abfe-d82128ba8515)
 
