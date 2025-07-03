@@ -139,14 +139,14 @@ My-Telegram-bot/
 │   │       ├── auth.py         # Вход, выход из аккаунта (уровеня student, curator)
 │   │       ├── export.py       # Экспорт данных о пользователях и активностях (в Excel)
 │   │       └── users.py        # Смена пароля, ФИО, а также отображение данных об аккаунте
-│   ├── config.py           # Конфиг для настройки бота
-│   ├── db.py               # Обёртки для SQLite (init_db, query, execute)
-│   ├── keyboards.py        # Клавиатуры (student_kb, curator_kb, admin_kb)
-│   └── utils.py            # Утилиты (only_role, get_name_data, генерация паролей...)
-├── main.py                 # Инициализация бота и роутеров
-├── requirements.txt        # Зависимости
-├── whitelist.json          # whitelist админов
-└── README.md               # Этот файл
+│   ├── config.py               # Конфиг для настройки бота
+│   ├── db.py                   # Обёртки для SQLite (init_db, query, execute)
+│   ├── keyboards.py            # Клавиатуры (student_kb, curator_kb, admin_kb)
+│   └── utils.py                # Утилиты (only_role, get_name_data, генерация паролей...)
+├── main.py                     # Инициализация бота и роутеров
+├── requirements.txt            # Зависимости
+├── whitelist.json              # whitelist админов
+└── README.md                   # Этот файл
 ```
 
 ---
