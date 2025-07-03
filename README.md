@@ -271,8 +271,13 @@ My-Telegram-bot/
 ## 🧩 Логика взаимодействия пользователя с интерфейсом
 
 <details>
-![Image](https://github.com/user-attachments/assets/c2cdec17-2d64-451b-abfe-d82128ba8515)
-![Image](https://github.com/user-attachments/assets/644ef4ea-bc24-41da-ad82-d810510262eb)
+
+ <summary>📷 Показать диаграммы</summary>
+ 
+ ![Image](https://github.com/user-attachments/assets/c2cdec17-2d64-451b-abfe-d82128ba8515)
+ 
+ ![Image](https://github.com/user-attachments/assets/644ef4ea-bc24-41da-ad82-d810510262eb)
+
 </details>
 
 ---
