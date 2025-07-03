@@ -5,6 +5,7 @@ from aiogram import types, Router
 from aiogram.types import Message
 
 from BotInfo.config import clear_dict_cooldown
+from BotInfo.utils import noop
 
 router_antispam = Router()
 
@@ -47,8 +48,11 @@ def antispam(cooldown: timedelta):
             last = last_message_time.get((user_id, handler_key))
 
             if last and now - last < cooldown:
+                from BotInfo.handlers.auth import remember_bot_msg
                 rem = (cooldown - (now - last)).seconds
-                return await message.reply(f"⏳ Подождите ещё {rem} сек.")
+                sent = await message.answer(f"⏳ Подождите ещё {rem} сек.")
+                remember_bot_msg(message.chat.id, sent.message_id)
+                return await noop()
 
             # Обновляем время последнего вызова
             last_message_time[(user_id, handler_key)] = now

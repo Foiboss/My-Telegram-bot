@@ -295,7 +295,7 @@ async def process_curator(msg: types.Message, state: FSMContext):
     # if user sent file - resend it to him
     file_link = data.get('cert_file_link')
     if file_link:
-        sent = await msg.answer(data['cert_file_id'], caption="📄 Ваш загруженный файл")
+        sent = await msg.answer_document(data['cert_file_id'], caption="📄 Ваш загруженный файл")
         remember_bot_msg(msg.chat.id, sent.message_id)
     elif data.get('cert_url'):
         # if user sent url - resend it
@@ -355,7 +355,7 @@ async def my_requests(msg: types.Message, **kwargs):
     # get user's requests
     rows = await query(
         """
-        SELECT id, title, event_status, cert_url, curator_full_name, confirmed
+        SELECT id, title, event_status, cert_url, cert_file_id, curator_full_name, confirmed
           FROM activities
          WHERE student_id = ?
         """,
@@ -369,18 +369,21 @@ async def my_requests(msg: types.Message, **kwargs):
     texts = []
     for r in rows:
         status = {0: "Ожидает", 1: "Подтверждена", -1: "Отклонена"}.get(r['confirmed'], str(r['confirmed']))
-        texts.append(
-            f"#{r['id']}: «{r['title']}»\n"
-            f"Статус мероприятия: «{r['event_status']}»\n"
-            f"Документ: {r['cert_url']}\n"
-            f"Куратор: {r['curator_full_name']}\n"
-            f"Статус заявки: {status}"
-        )
-
-    # separate so it won't be long enough to exceed the limits of telegram 1 message
-    for chunk in ("\n\n".join(texts))[0:4000].split("\n\n"):
-        sent = await msg.answer(chunk, reply_markup=student_kb)
-        remember_bot_msg(msg.chat.id, sent.message_id)
+        if r['cert_file_id']:
+            sent = await msg.answer_document(r['cert_file_id'], caption=f"#{r['id']}: «{r['title']}»\n"
+                                                                       f"Статус мероприятия: «{r['event_status']}»\n"
+                                                                       f"Куратор: {r['curator_full_name']}\n"
+                                                                       f"Статус заявки: {status}",
+                                            reply_markup=student_kb)
+            remember_bot_msg(msg.chat.id, sent.message_id)
+        else:
+            sent = await msg.answer(f"#{r['id']}: «{r['title']}»\n"
+                                        f"Статус мероприятия: «{r['event_status']}»\n"
+                                        f"Документ: {r['cert_url']}\n"
+                                        f"Куратор: {r['curator_full_name']}\n"
+                                        f"Статус заявки: {status}",
+                                        reply_markup=student_kb)
+            remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # getting back to student's main menu
@@ -413,16 +416,13 @@ async def review_requests(msg: types.Message, **kwargs):
     )
     curator_full_name = curator_row["full_name"]
     rows = await query(
-        'SELECT id, student_id, full_name, title FROM activities WHERE curator_full_name = ? AND confirmed = 0',
+        'SELECT id, student_id, full_name, title, cert_url, cert_file_id FROM activities WHERE curator_full_name = ? AND confirmed = 0',
         (curator_full_name,)
     )
     if not rows: # not found any requests assigned to curators name
         return await msg.answer('У вас нет новых заявок для проверки.')
 
     for r in rows: # show requests and allow to accept/decline it
-        text = (f"Заявка #{r['id']} — студент {r['student_id']}\n"
-                f"ФИО — {r['full_name']}\n"
-                f"Мероприятие — {r['title']}")
         kb = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
@@ -431,7 +431,17 @@ async def review_requests(msg: types.Message, **kwargs):
                 ]
             ]
         )
-        await msg.answer(text, reply_markup=kb)
+        if r['cert_file_id']:
+            text = (f"Заявка #{r['id']} — студент {r['student_id']}\n"
+                    f"ФИО — {r['full_name']}\n"
+                    f"Мероприятие — {r['title']}\n")
+            await msg.answer_document(r['cert_file_id'], caption=text, reply_markup=kb)
+        else:
+            text = (f"Заявка #{r['id']} — студент {r['student_id']}\n"
+                    f"ФИО — {r['full_name']}\n"
+                    f"Мероприятие — {r['title']}\n"
+                    f"Ссылка — {r['cert_url']}")
+            await msg.answer(text, reply_markup=kb)
 
 
 # curator accepts request

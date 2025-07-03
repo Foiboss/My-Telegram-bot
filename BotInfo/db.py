@@ -1,5 +1,9 @@
+import os
+import sys
+
 import aiosqlite
-from config import DB_PATH
+
+from BotInfo.config import DB_PATH
 
 
 async def init_db():

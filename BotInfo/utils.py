@@ -79,7 +79,7 @@ def only_role(*allowed_roles: str):
                 (msg.from_user.id,), one=True
             )
             if not user or user["role"] not in allowed_roles:
-                return await msg.reply(
+                return await msg.answer(
                     f"Доступно только для ролей: {', '.join(allowed_roles)}"
                 )
             return await func(msg, *args, **kwargs)
@@ -111,7 +111,7 @@ async def send_curator_list(msg: types.Message):
         "SELECT full_name FROM users WHERE role = 'curator' AND full_name <> 'Фамилия Имя Отчество'"
     )
     if not rows:
-        await msg.reply("❗ В системе не найдено ни одного куратора.")
+        await msg.answer("❗ В системе не найдено ни одного куратора.")
         return
 
     # write in temp file
@@ -126,3 +126,9 @@ async def send_curator_list(msg: types.Message):
         FSInputFile(path, filename="curators_list.txt"),
         caption="📄 Список доступных кураторов"
     )
+
+async def noop() -> None:
+    """
+    Empty coroutine stub
+    """
+    return None
