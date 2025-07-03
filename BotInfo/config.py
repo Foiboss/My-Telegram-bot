@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-TOKEN = "7714578905:AAFykwrcmCERmFoijVK8-ZvCPK-dcgS4ChM"
+TOKEN = "enter here your token"
 WHITELIST_FILE = "whitelist.json"
 DB_PATH = "bot.db"
 
