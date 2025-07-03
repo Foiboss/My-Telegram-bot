@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import timedelta
 
 from aiogram import types, Router, Bot
 from aiogram.filters import Command
@@ -11,7 +12,7 @@ from BotInfo.handlers.antispam import antispam
 from ..config import message_cooldown
 from ..db import query, execute
 from ..keyboards import main, student_kb, curator_kb, admin_kb
-from ..utils import only_role
+from ..utils import only_role, gen_password
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -63,19 +64,47 @@ async def cmd_start(msg: types.Message, **kwargs):
     photo = FSInputFile(photo_path)
     sent = await msg.answer_photo(
         photo=photo,
-        caption=f'Привет, {msg.from_user.first_name}!\n'
+        caption=f'👋 Привет, {msg.from_user.first_name}!\n'
                 'Этот бот предназначен для сбора информации о твоих внеучебных достижениях.\n'
-                'Для начала необходимо авторизоваться.\n\n'
-                'Кстати, не забудь сменить ФИО у себя в профиле,\n'
+                '🔐 Для начала необходимо авторизоваться.\n\n'
+                '✏️ Кстати, не забудь сменить ФИО у себя в профиле,\n'
                 'чтобы твои коллеги могли тебя узнать! Там же ты можешь сменить и пароль от аккаунта',
         reply_markup=main
     )
     remember_bot_msg(msg.chat.id, sent.message_id)
 
 
+@router_auth.message(lambda msg: msg.text == '👥 Сгенерировать студента и куратора')
+@antispam(timedelta(minutes=2))
+async def gen_two_creds(msg: types.Message, **kwargs):
+    await delete_prev(msg.chat.id, msg.bot)
+    text = '✅ Сохраните эти данные надёжно:\n'
+
+    # student
+    login = gen_password()
+    password = gen_password()
+    await execute(
+        'INSERT INTO users(telegram_id,username,full_name,role,password) VALUES(?,?,?,?,?)',
+        (None, login, 'Фамилия Имя Отчество', 'student', password)
+    )
+    text += f'Student: {login} - {password}\n'
+
+    # curator
+    login = gen_password()
+    password = gen_password()
+    await execute(
+        'INSERT INTO users(telegram_id,username,full_name,role,password) VALUES(?,?,?,?,?)',
+        (None, login, 'Фамилия Имя Отчество', 'curator', password)
+    )
+    text += f'Curator: {login} - {password}\n'
+
+    await msg.answer(text, reply_markup=main)
+
+
+
 # region User login
 
-@router_auth.message(lambda msg: msg.text == "Авторизация")
+@router_auth.message(lambda msg: msg.text == "🔑 Авторизация")
 @antispam(message_cooldown)
 async def login_start(msg: types.Message, state: FSMContext, **kwargs):
     await delete_prev(msg.chat.id, msg.bot)
@@ -164,7 +193,7 @@ async def process_password(msg: types.Message, state: FSMContext):
 
 
 # logout command (russificated)
-@router_auth.message(lambda msg: msg.text == 'Выйти из аккаунта')
+@router_auth.message(lambda msg: msg.text == '🚪 Выйти из аккаунта')
 @only_role('student', 'curator')
 async def logout(msg: types.Message, state: FSMContext, **kwargs):
     await delete_prev(msg.chat.id, msg.bot)
@@ -175,5 +204,5 @@ async def logout(msg: types.Message, state: FSMContext, **kwargs):
     # 2) Cleaning all the user's FSM data
     await state.clear()
     # 3) Remove the keyboard and send a reply
-    sent = await msg.answer('Вы вышли из аккаунта', reply_markup=main)
+    sent = await msg.answer('✅ Вы вышли из аккаунта', reply_markup=main)
     remember_bot_msg(msg.chat.id, sent.message_id)

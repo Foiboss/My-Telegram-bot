@@ -22,7 +22,7 @@ async def send_curator_input_photo(msg: types.Message):
     project_root = os.path.dirname(script_dir)
     photo_path = os.path.join(project_root, 'Photos', 'curator.png')
     photo = FSInputFile(photo_path)
-    sent = await msg.answer_photo(photo=photo, caption='Введите ФИО куратора:', reply_markup=cancel_kb)
+    sent = await msg.answer_photo(photo=photo, caption='👤 Введите ФИО куратора:', reply_markup=cancel_kb)
     remember_bot_msg(msg.chat.id, sent.message_id)
 
 
@@ -42,7 +42,7 @@ class AddActivitySG(StatesGroup):
     curator = State()
 
 
-@router_activities.message(lambda msg: msg.text == "Отмена")
+@router_activities.message(lambda msg: msg.text == "❌ Отмена")
 async def cancel_add_activity(msg: types.Message, state: FSMContext):
     await state.clear()
 
@@ -53,13 +53,13 @@ async def cancel_add_activity(msg: types.Message, state: FSMContext):
         pass
 
     sent = await msg.answer(
-        'Добавление активности отменено',
+        '❌ Добавление активности отменено',
         reply_markup=student_kb
     )
     remember_bot_msg(msg.chat.id, sent.message_id)
 
 
-@router_activities.message(lambda msg: msg.text == "Добавить активность")
+@router_activities.message(lambda msg: msg.text == "➕ Добавить активность")
 @only_role('student')
 @antispam(message_cooldown)
 async def cmd_add_activity(msg: types.Message, state: FSMContext, **kwargs):
@@ -73,7 +73,7 @@ async def cmd_add_activity(msg: types.Message, state: FSMContext, **kwargs):
         'SELECT id, full_name, username FROM users WHERE telegram_id=?',
         (msg.from_user.id,), one=True)
     if not user:
-        sent = await msg.answer('Вас нет в базе, авторизуйтесь', reply_markup=student_kb)
+        sent = await msg.answer('🔒 Вас нет в базе, авторизуйтесь', reply_markup=student_kb)
         remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
@@ -86,7 +86,7 @@ async def cmd_add_activity(msg: types.Message, state: FSMContext, **kwargs):
     project_root = os.path.dirname(script_dir)  # …/project
     photo_path = os.path.join(project_root, 'Photos', 'event.jpg')
     photo = FSInputFile(photo_path)
-    sent = await msg.answer_photo(photo=photo, caption="Введите название активности:", reply_markup=cancel_kb)
+    sent = await msg.answer_photo(photo=photo, caption="✍️ Введите название активности:", reply_markup=cancel_kb)
     remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
@@ -107,7 +107,7 @@ async def process_title(msg: types.Message, state: FSMContext):
     project_root = os.path.dirname(script_dir)  # …/project
     photo_path = os.path.join(project_root, 'Photos', 'status.png')
     photo = FSInputFile(photo_path)
-    sent = await msg.answer_photo(photo=photo, caption='Выберите статус мероприятия:\n'
+    sent = await msg.answer_photo(photo=photo, caption='🏆 Выберите статус мероприятия:\n'
                     'например: международный, всероссийский, городской, региональный, внутривузовский...',
                     reply_markup=cancel_kb)
     remember_bot_msg(msg.chat.id, sent.message_id)
@@ -140,7 +140,7 @@ async def process_event_status(msg: types.Message, state: FSMContext):
     project_root = os.path.dirname(script_dir)  # …/project
     photo_path = os.path.join(project_root, 'Photos', 'certificate.png')
     photo = FSInputFile(photo_path)
-    sent = await msg.answer_photo(photo=photo, caption='Выберите тип подтверждения:', reply_markup=kb)
+    sent = await msg.answer_photo(photo=photo, caption='📎 Выберите тип подтверждения:', reply_markup=kb)
     remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
@@ -157,11 +157,11 @@ async def process_choice(msg: types.Message, state: FSMContext):
     text = msg.text.strip().lower()
     if text == 'ссылка':
         await state.set_state(AddActivitySG.cert_url)
-        sent = await msg.answer('Отправьте URL документа:', reply_markup=cancel_kb)
+        sent = await msg.answer('🌐 Отправьте URL документа:', reply_markup=cancel_kb)
         remember_bot_msg(msg.chat.id, sent.message_id)
     elif text == 'файл':
         await state.set_state(AddActivitySG.cert_file)
-        sent = await msg.answer('Пришлите файл документом:', reply_markup=cancel_kb)
+        sent = await msg.answer('📄 Пришлите файл документом:', reply_markup=cancel_kb)
         remember_bot_msg(msg.chat.id, sent.message_id)
     elif text == 'пропустить':
         await state.update_data(cert_url=None, cert_file_id=None, cert_file_link=None)
@@ -169,7 +169,7 @@ async def process_choice(msg: types.Message, state: FSMContext):
         await send_curator_list(msg)
         await send_curator_input_photo(msg)
     else:
-        sent = await msg.answer('Неверный выбор. Выберите из клавиатуры')
+        sent = await msg.answer('❌ Неверный выбор. Выберите из клавиатуры')
         remember_bot_msg(msg.chat.id, sent.message_id)
 
 
@@ -215,7 +215,7 @@ async def process_bad_file(msg: types.Message):
     except:
         pass
 
-    sent = await msg.answer('Ожидался документ. Пожалуйста, пришлите файл документом.', reply_markup=cancel_kb)
+    sent = await msg.answer('🚫 Ожидался документ. Пожалуйста, пришлите файл документом.', reply_markup=cancel_kb)
     remember_bot_msg(msg.chat.id, sent.message_id)
 
 
@@ -283,13 +283,13 @@ async def process_curator(msg: types.Message, state: FSMContext):
 
     # first message: text otchet
     lines = [
-        f"Студенческий: {data['student_id']}",
-        f"Имя: {data['full_name']}",
-        f"Название: {data['title']}",
-        f"Статус мероприятия: {data['event_status']}",
-        f"Куратор: {msg.text.strip()}"
+        f"🎓 Студенческий: {data['student_id']}",
+        f"👤 Имя: {data['full_name']}",
+        f"📋 Название: {data['title']}",
+        f"📊 Статус мероприятия: {data['event_status']}",
+        f"🧑‍🏫 Куратор: {msg.text.strip()}"
     ]
-    sent = await msg.answer('Активность добавлена:\n' + '\n'.join(lines), reply_markup=student_kb)
+    sent = await msg.answer('✅ Активность добавлена:\n' + '\n'.join(lines), reply_markup=student_kb)
     remember_bot_msg(msg.chat.id, sent.message_id)
 
     # if user sent file - resend it to him
@@ -311,7 +311,7 @@ async def process_curator(msg: types.Message, state: FSMContext):
 
 
 # Student request management profile open command
-@router_activities.message(lambda msg: msg.text == "Профиль")
+@router_activities.message(lambda msg: msg.text == "👤 Профиль")
 async def open_lk(msg: types.Message):
     await delete_prev(msg.chat.id, msg.bot)
     try:
@@ -319,12 +319,12 @@ async def open_lk(msg: types.Message):
     except:
         pass
 
-    sent = await msg.answer("Добро пожаловать в профиль", reply_markup=lk_kb)
+    sent = await msg.answer("😊 Добро пожаловать в профиль", reply_markup=lk_kb)
     remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # Student's request check (russificated variant)
-@router_activities.message(lambda msg: msg.text == "Мои заявки")
+@router_activities.message(lambda msg: msg.text == "📑 Мои заявки")
 @only_role('student')
 async def my_requests_button(msg: types.Message, **kwargs):
     await delete_prev(msg.chat.id, msg.bot)
@@ -371,23 +371,23 @@ async def my_requests(msg: types.Message, **kwargs):
         status = {0: "Ожидает", 1: "Подтверждена", -1: "Отклонена"}.get(r['confirmed'], str(r['confirmed']))
         if r['cert_file_id']:
             sent = await msg.answer_document(r['cert_file_id'], caption=f"#{r['id']}: «{r['title']}»\n"
-                                                                       f"Статус мероприятия: «{r['event_status']}»\n"
-                                                                       f"Куратор: {r['curator_full_name']}\n"
-                                                                       f"Статус заявки: {status}",
+                                                                       f"📊 Статус мероприятия: «{r['event_status']}»\n"
+                                                                       f"🧑‍🏫 Куратор: {r['curator_full_name']}\n"
+                                                                       f"✅ Статус заявки: {status}",
                                             reply_markup=student_kb)
             remember_bot_msg(msg.chat.id, sent.message_id)
         else:
             sent = await msg.answer(f"#{r['id']}: «{r['title']}»\n"
-                                        f"Статус мероприятия: «{r['event_status']}»\n"
-                                        f"Документ: {r['cert_url']}\n"
-                                        f"Куратор: {r['curator_full_name']}\n"
-                                        f"Статус заявки: {status}",
+                                        f"📊 Статус мероприятия: «{r['event_status']}»\n"
+                                        f"🔗 Документ: {r['cert_url']}\n"
+                                        f"🧑‍🏫 Куратор: {r['curator_full_name']}\n"
+                                        f"✅ Статус заявки: {status}",
                                         reply_markup=student_kb)
             remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # getting back to student's main menu
-@router_activities.message(lambda msg: msg.text == "Назад")
+@router_activities.message(lambda msg: msg.text == "↩️ Назад")
 @only_role('student')
 async def back_to_menu(msg: types.Message, **kwargs):
     await delete_prev(msg.chat.id, msg.bot)
@@ -396,7 +396,7 @@ async def back_to_menu(msg: types.Message, **kwargs):
     except:
         pass
 
-    sent = await msg.answer('Вы вернулись в главное меню', reply_markup=student_kb)
+    sent = await msg.answer('🔄 Вы вернулись в главное меню', reply_markup=student_kb)
     remember_bot_msg(msg.chat.id, sent.message_id)
 
 # endregion
@@ -405,7 +405,7 @@ async def back_to_menu(msg: types.Message, **kwargs):
 
 
 # curator revues requests
-@router_activities.message(lambda msg: msg.text == "Заявки")
+@router_activities.message(lambda msg: msg.text == "📋 Заявки")
 @only_role('curator')
 @antispam(message_cooldown)
 async def review_requests(msg: types.Message, **kwargs):
@@ -420,7 +420,7 @@ async def review_requests(msg: types.Message, **kwargs):
         (curator_full_name,)
     )
     if not rows: # not found any requests assigned to curators name
-        return await msg.answer('У вас нет новых заявок для проверки.')
+        return await msg.answer('📭 У вас нет новых заявок для проверки.')
 
     for r in rows: # show requests and allow to accept/decline it
         kb = InlineKeyboardMarkup(
@@ -432,15 +432,15 @@ async def review_requests(msg: types.Message, **kwargs):
             ]
         )
         if r['cert_file_id']:
-            text = (f"Заявка #{r['id']} — студент {r['student_id']}\n"
-                    f"ФИО — {r['full_name']}\n"
-                    f"Мероприятие — {r['title']}\n")
+            text = (f"🆕 Заявка #{r['id']} — студент {r['student_id']}\n"
+                    f"👤 ФИО — {r['full_name']}\n"
+                    f"📋 Мероприятие — {r['title']}\n")
             await msg.answer_document(r['cert_file_id'], caption=text, reply_markup=kb)
         else:
-            text = (f"Заявка #{r['id']} — студент {r['student_id']}\n"
-                    f"ФИО — {r['full_name']}\n"
-                    f"Мероприятие — {r['title']}\n"
-                    f"Ссылка — {r['cert_url']}")
+            text = (f"🆕 Заявка #{r['id']} — студент {r['student_id']}\n"
+                    f"👤 ФИО — {r['full_name']}\n"
+                    f"📋 Мероприятие — {r['title']}\n"
+                    f"🔗 Ссылка — {r['cert_url']}")
             await msg.answer(text, reply_markup=kb)
 
 
@@ -453,7 +453,7 @@ async def callback_approve(cb: types.CallbackQuery, **kwargs):
     act_id = int(cb.data.split(':', 1)[1])
     await execute('UPDATE activities SET confirmed = 1 WHERE id = ?', (act_id,))
     await cb.message.edit_reply_markup()  # убираем кнопки
-    await cb.answer('Заявка подтверждена')
+    await cb.answer('✅ Заявка подтверждена')
 
 
 # curator declines request
@@ -464,6 +464,6 @@ async def callback_reject(cb: types.CallbackQuery, **kwargs):
     act_id = int(cb.data.split(':', 1)[1])
     await execute('UPDATE activities SET confirmed = -1 WHERE id = ?', (act_id,))
     await cb.message.edit_reply_markup()  # убираем кнопки
-    await cb.answer('Заявка отклонена')
+    await cb.answer('❌ Заявка отклонена')
 
 # endregion

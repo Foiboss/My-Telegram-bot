@@ -21,7 +21,7 @@ router_export = Router()
 
 
 # Export users (Russificated)
-@router_export.message(lambda msg: msg.text == "Выгрузить пользователей")
+@router_export.message(lambda msg: msg.text == "📥 Выгрузить пользователей")
 @only_role('admin')
 @antispam(export_cooldown)
 async def export_users_button(msg: types.Message, **kwargs):
@@ -74,7 +74,7 @@ async def export_excel(msg: types.Message, **kwargs):
 # region Export activities
 
 # Export activities (Russificated)
-@router_export.message(lambda msg: msg.text == "Выгрузить активности")
+@router_export.message(lambda msg: msg.text == "📥 Выгрузить активности")
 @only_role('admin')
 @antispam(export_cooldown)
 async def export_activities_button(msg: types.Message, **kwargs):

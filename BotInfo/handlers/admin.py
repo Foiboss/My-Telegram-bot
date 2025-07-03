@@ -108,7 +108,7 @@ async def admin_logout(msg: types.Message, **kwargs):
 
 
 # russificated version of admin logout
-@router_admin.message(lambda msg: msg.text == "Выйти из админ-аккаунта")
+@router_admin.message(lambda msg: msg.text == "🚪 Выйти из админ-аккаунта")
 @only_role('admin')
 async def handle_logout_button(msg: types.Message, **kwargs):
     await do_admin_logout(msg)
@@ -119,7 +119,7 @@ async def handle_logout_button(msg: types.Message, **kwargs):
 # region Users management: Add - Delete
 
 # Add user russificated info on the /gen_creds command usage
-@router_admin.message(lambda msg: msg.text == "Добавить пользователя")
+@router_admin.message(lambda msg: msg.text == "➕ Добавить пользователя")
 @only_role('admin')
 async def add_user_button(msg: types.Message, **kwargs):
     await delete_prev(msg.chat.id, msg.bot)

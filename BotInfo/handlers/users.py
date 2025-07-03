@@ -27,7 +27,7 @@ class ChangeUserData(StatesGroup):
 # region Change Password
 
 # Change password
-@router_users.message(lambda msg: msg.text == "Изменить пароль")
+@router_users.message(lambda msg: msg.text == "🔒 Изменить пароль")
 @only_role('student', 'curator')
 @antispam(message_cooldown)
 async def change_password_start(msg: types.Message, state: FSMContext, **kwargs):
@@ -109,7 +109,7 @@ async def process_passwords(msg: types.Message, state: FSMContext, **kwargs):
 # region Change Name
 
 # chenge full name
-@router_users.message(lambda msg: msg.text == "Изменить ФИО")
+@router_users.message(lambda msg: msg.text == "✍️ Изменить ФИО")
 @only_role('student', 'curator')
 @antispam(message_cooldown)
 async def change_full_name_start(msg: types.Message, state: FSMContext, **kwargs):
@@ -202,10 +202,10 @@ async def show_my_data(msg: types.Message, **kwargs):
     kb = role_to_kb.get(row['role'], main)
 
     sent = await msg.answer(
-        f"ФИО: {row['full_name']}\n"
-        f"Роль: {row['role']}\n"
-        f"Логин: {row['username']}\n"
-        f"Пароль: {row['password']}",
+        f"👤 ФИО: {row['full_name']}\n"
+        f"🎓 Роль: {row['role']}\n"
+        f"🆔 Логин: {row['username']}\n"
+        f"🔑 Пароль: {row['password']}",
         reply_markup=kb
     )
     remember_bot_msg(msg.chat.id, sent.message_id)
@@ -213,7 +213,7 @@ async def show_my_data(msg: types.Message, **kwargs):
 
 
 # show users data (russificated)
-@router_users.message(lambda msg: msg.text == "Мои данные")
+@router_users.message(lambda msg: msg.text == "📝 Мои данные")
 @antispam(message_cooldown)
 async def my_data_button(msg: types.Message, **kwargs):
     await delete_prev(msg.chat.id, msg.bot)
