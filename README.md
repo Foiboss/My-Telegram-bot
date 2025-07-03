@@ -127,7 +127,7 @@ python main.py
 My-Telegram-bot/
 │   ├── BotInfo/
 │   │   ├── Photos/             # Изображения оформления сообщения в чате бота
-│   │   ├── handlers/           # Хэндлеры команд и FSM (activities, admin, antispam, auth, export, users)
+│   │   └── handlers/           # Хэндлеры команд и FSM (activities, admin, antispam, auth, export, users)
 │   │       ├── activities.py   # Логика работы с внеурочными активностями (заявки)
 │   │       ├── antispam.py     # Логика работы антиспам плагина
 │   │       ├── admin.py        # Команды администратора (login/logout, создание/удаление учётных записей)
