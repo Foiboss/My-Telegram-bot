@@ -88,7 +88,7 @@ async def cmd_start(msg: types.Message, **kwargs):
 #         (None, login, 'Фамилия Имя Отчество', 'student', password)
 #     )
 #     text += f'Student: {login} - {password}\n'
-# 
+#
 #     # curator
 #     login = gen_password()
 #     password = gen_password()

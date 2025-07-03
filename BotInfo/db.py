@@ -23,6 +23,7 @@ async def init_db():
         CREATE TABLE IF NOT EXISTS activities (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_id INTEGER,
+            telegram_id INTEGER,
             full_name TEXT,
             title TEXT,
             event_status TEXT,

@@ -16,7 +16,7 @@ tg_bot = Bot(TOKEN)
 dp = Dispatcher()
 router = Router()
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 async def on_startup():
     if should_be_antispam_protected:

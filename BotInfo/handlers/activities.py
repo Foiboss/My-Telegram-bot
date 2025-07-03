@@ -33,6 +33,7 @@ router_activities = Router()
 
 class AddActivitySG(StatesGroup):
     student_id = State()
+    telegram_id = State()
     full_name = State()
     title = State()
     event_status = State()
@@ -78,6 +79,7 @@ async def cmd_add_activity(msg: types.Message, state: FSMContext, **kwargs):
         return
 
     await state.update_data(student_id=user['username'])
+    await state.update_data(telegram_id=msg.from_user.id)
     await state.update_data(full_name=user['full_name'])
     await state.set_state(AddActivitySG.title)
 
@@ -269,12 +271,12 @@ async def process_curator(msg: types.Message, state: FSMContext):
 
     await execute(
         '''INSERT INTO activities(
-             student_id, full_name, 
+             student_id, telegram_id, full_name, 
              title, event_status, cert_url, cert_file_id, cert_file_link,
              curator_full_name, confirmed
-           ) VALUES(?,?,?,?,?,?,?,?,0)''',
+           ) VALUES(?,?,?,?,?,?,?,?,?,0)''',
         (
-            data['student_id'], data['full_name'],
+            data['student_id'], data['telegram_id'], data['full_name'],
             data['title'], data['event_status'], data.get('cert_url'), data.get('cert_file_id'), data.get('cert_file_link'),
             name
         )

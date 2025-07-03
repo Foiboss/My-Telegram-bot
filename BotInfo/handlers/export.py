@@ -106,6 +106,7 @@ async def export_activities(msg: types.Message, **kwargs):
         '''
         SELECT id,
                student_id,
+               telegram_id,
                full_name,
                title,
                event_status,
@@ -116,7 +117,7 @@ async def export_activities(msg: types.Message, **kwargs):
         '''
     )
     df = pd.DataFrame(rows, columns=[
-        'id', 'student_id', 'full_name',
+        'id', 'student_id', 'telegram_id', 'full_name',
         'title', 'event_status', 'cert_url',
         'curator_full_name',
         'confirmed'
