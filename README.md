@@ -273,9 +273,14 @@ My-Telegram-bot/
 <details>
 
  <summary>📷 Показать диаграммы</summary>
- 
+
+ ###Студент:
  ![Image](https://github.com/user-attachments/assets/c2cdec17-2d64-451b-abfe-d82128ba8515)
+
+ ###Куратор:
  ![Image](https://github.com/user-attachments/assets/a104b93a-1b06-4285-bb3b-a03c86b743c7)
+ 
+ ###Админ:
  ![Image](https://github.com/user-attachments/assets/d3a3cf23-9219-411d-98ea-afcb6b193607)
 
 </details>
