@@ -5,8 +5,7 @@ import tempfile
 from typing import List, Tuple
 
 from aiogram import types
-from aiogram.dispatcher.event.bases import CancelHandler
-from aiogram.types import InputFile, FSInputFile
+from aiogram.types import FSInputFile
 
 from BotInfo.db import query
 from config import WHITELIST_FILE
