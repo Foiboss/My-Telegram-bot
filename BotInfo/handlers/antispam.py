@@ -1,10 +1,10 @@
 import asyncio
 from datetime import datetime, timedelta
 
-from aiogram import types, Router, F
+from aiogram import types, Router
 from aiogram.types import Message
 
-from BotInfo.config import clear_dict_cooldown, message_cooldown
+from BotInfo.config import clear_dict_cooldown
 
 router_antispam = Router()
 

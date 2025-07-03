@@ -9,12 +9,21 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import FSInputFile
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 from BotInfo.handlers.antispam import antispam
-from BotInfo.handlers.auth import delete_prev, last_bot_msg_del
+from BotInfo.handlers.auth import delete_prev, remember_bot_msg
 
 from ..config import TOKEN, message_cooldown
 from ..db import execute, query
 from ..utils import only_role, get_name_data, send_curator_list
 from ..keyboards import lk_kb, student_kb, cancel_kb
+
+
+async def send_curator_input_photo(msg: types.Message):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    photo_path = os.path.join(project_root, 'Photos', 'curator.png')
+    photo = FSInputFile(photo_path)
+    sent = await msg.answer_photo(photo=photo, caption='Введите ФИО куратора:', reply_markup=cancel_kb)
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 router_activities = Router()
@@ -47,7 +56,7 @@ async def cancel_add_activity(msg: types.Message, state: FSMContext):
         'Добавление активности отменено',
         reply_markup=student_kb
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 @router_activities.message(lambda msg: msg.text == "Добавить активность")
@@ -65,7 +74,7 @@ async def cmd_add_activity(msg: types.Message, state: FSMContext, **kwargs):
         (msg.from_user.id,), one=True)
     if not user:
         sent = await msg.answer('Вас нет в базе, авторизуйтесь', reply_markup=student_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     await state.update_data(student_id=user['username'])
@@ -75,10 +84,10 @@ async def cmd_add_activity(msg: types.Message, state: FSMContext, **kwargs):
     this_file = os.path.abspath(__file__)
     script_dir = os.path.dirname(this_file)  # …/project/handlers
     project_root = os.path.dirname(script_dir)  # …/project
-    photo_path = os.path.join(project_root, 'Photos', 'event.png')
+    photo_path = os.path.join(project_root, 'Photos', 'event.jpg')
     photo = FSInputFile(photo_path)
     sent = await msg.answer_photo(photo=photo, caption="Введите название активности:", reply_markup=cancel_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
 
@@ -93,10 +102,15 @@ async def process_title(msg: types.Message, state: FSMContext):
 
     await state.update_data(title=msg.text.strip())
     await state.set_state(AddActivitySG.event_status)
-    sent = await msg.answer('Выберите статус мероприятия:\n'
+    this_file = os.path.abspath(__file__)
+    script_dir = os.path.dirname(this_file)  # …/project/handlers
+    project_root = os.path.dirname(script_dir)  # …/project
+    photo_path = os.path.join(project_root, 'Photos', 'status.png')
+    photo = FSInputFile(photo_path)
+    sent = await msg.answer_photo(photo=photo, caption='Выберите статус мероприятия:\n'
                     'например: международный, всероссийский, городской, региональный, внутривузовский...',
                     reply_markup=cancel_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
 
@@ -121,8 +135,13 @@ async def process_event_status(msg: types.Message, state: FSMContext):
         one_time_keyboard=True
     )
     await state.set_state(AddActivitySG.cert_choice)
-    sent = await msg.answer('Выберите тип подтверждения:', reply_markup=kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    this_file = os.path.abspath(__file__)
+    script_dir = os.path.dirname(this_file)  # …/project/handlers
+    project_root = os.path.dirname(script_dir)  # …/project
+    photo_path = os.path.join(project_root, 'Photos', 'certificate.png')
+    photo = FSInputFile(photo_path)
+    sent = await msg.answer_photo(photo=photo, caption='Выберите тип подтверждения:', reply_markup=kb)
+    remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
 
@@ -139,20 +158,19 @@ async def process_choice(msg: types.Message, state: FSMContext):
     if text == 'ссылка':
         await state.set_state(AddActivitySG.cert_url)
         sent = await msg.answer('Отправьте URL документа:', reply_markup=cancel_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
     elif text == 'файл':
         await state.set_state(AddActivitySG.cert_file)
         sent = await msg.answer('Пришлите файл документом:', reply_markup=cancel_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
     elif text == 'пропустить':
         await state.update_data(cert_url=None, cert_file_id=None, cert_file_link=None)
         await state.set_state(AddActivitySG.curator)
         await send_curator_list(msg)
-        sent = await msg.answer('Введите ФИО куратора:', reply_markup=cancel_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        await send_curator_input_photo(msg)
     else:
         sent = await msg.answer('Неверный выбор. Выберите из клавиатуры')
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # 2 certificate url choice step
@@ -167,8 +185,7 @@ async def process_url(msg: types.Message, state: FSMContext):
     await state.update_data(cert_url=msg.text.strip(), cert_file_id=None, cert_file_link=None)
     await state.set_state(AddActivitySG.curator)
     await send_curator_list(msg)
-    sent = await msg.answer('Введите ФИО куратора:', reply_markup=cancel_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    await send_curator_input_photo(msg)
 
 
 # 3 certificate document choice step
@@ -186,8 +203,7 @@ async def process_file(msg: types.Message, state: FSMContext):
     await state.update_data(cert_url=file_link, cert_file_id=file_id, cert_file_link=file_link)
     await state.set_state(AddActivitySG.curator)
     await send_curator_list(msg)
-    sent = await msg.answer('Введите ФИО куратора:', reply_markup=cancel_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    await send_curator_input_photo(msg)
 
 
 # not a document error handler
@@ -200,7 +216,7 @@ async def process_bad_file(msg: types.Message):
         pass
 
     sent = await msg.answer('Ожидался документ. Пожалуйста, пришлите файл документом.', reply_markup=cancel_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # curator step
@@ -220,7 +236,7 @@ async def process_curator(msg: types.Message, state: FSMContext):
             "Пожалуйста, выберите имя из списка и введите корректное ФИО.",
             reply_markup=cancel_kb
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     # Check full name format
@@ -232,7 +248,7 @@ async def process_curator(msg: types.Message, state: FSMContext):
             "Пожалуйста, введите три слова через пробел: Фамилия Имя Отчество",
             reply_markup=cancel_kb
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     # Check if full name of curator exists in database
@@ -246,7 +262,7 @@ async def process_curator(msg: types.Message, state: FSMContext):
             "Пожалуйста, введите имя существующего в базе данных куратора",
             reply_markup=cancel_kb
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     data = await state.get_data()
@@ -274,20 +290,20 @@ async def process_curator(msg: types.Message, state: FSMContext):
         f"Куратор: {msg.text.strip()}"
     ]
     sent = await msg.answer('Активность добавлена:\n' + '\n'.join(lines), reply_markup=student_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
     # if user sent file - resend it to him
     file_link = data.get('cert_file_link')
     if file_link:
         sent = await msg.answer(data['cert_file_id'], caption="📄 Ваш загруженный файл")
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
     elif data.get('cert_url'):
         # if user sent url - resend it
         sent = await msg.answer(f"🔗 Ссылка на подтверждение: {data['cert_url']}")
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
     else:
         sent = await msg.answer("— без подтверждений —")
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
 
 # endregion
 
@@ -304,7 +320,7 @@ async def open_lk(msg: types.Message):
         pass
 
     sent = await msg.answer("Добро пожаловать в профиль", reply_markup=lk_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # Student's request check (russificated variant)
@@ -347,7 +363,7 @@ async def my_requests(msg: types.Message, **kwargs):
     )
     if not rows:
         sent = await msg.answer("У вас ещё нет поданных заявок.", reply_markup=student_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     texts = []
@@ -364,7 +380,7 @@ async def my_requests(msg: types.Message, **kwargs):
     # separate so it won't be long enough to exceed the limits of telegram 1 message
     for chunk in ("\n\n".join(texts))[0:4000].split("\n\n"):
         sent = await msg.answer(chunk, reply_markup=student_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # getting back to student's main menu
@@ -378,7 +394,7 @@ async def back_to_menu(msg: types.Message, **kwargs):
         pass
 
     sent = await msg.answer('Вы вернулись в главное меню', reply_markup=student_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 # endregion
 

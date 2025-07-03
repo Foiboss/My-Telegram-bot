@@ -3,7 +3,7 @@ import sys
 from aiogram import types, Router
 from aiogram.filters import Command
 from BotInfo.handlers.antispam import antispam
-from BotInfo.handlers.auth import delete_prev, last_bot_msg_del
+from BotInfo.handlers.auth import delete_prev, remember_bot_msg
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
@@ -50,7 +50,7 @@ async def change_password_start(msg: types.Message, state: FSMContext, **kwargs)
         "<старый_пароль> <новый_пароль>",
         reply_markup=kb
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
     await state.set_state(ChangeUserData.waiting_for_passwords)
 
@@ -78,7 +78,7 @@ async def process_passwords(msg: types.Message, state: FSMContext, **kwargs):
         sent = await msg.answer(
             "❗ Формат неправильный. Нужно: <старый_пароль> <новый_пароль>", reply_markup=kb
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     old, new = parts
@@ -98,7 +98,7 @@ async def process_passwords(msg: types.Message, state: FSMContext, **kwargs):
             (new, msg.from_user.id)
         )
         sent = await msg.answer('✅ Пароль успешно изменён', reply_markup=kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
     # get out of state
     await state.clear()
@@ -132,7 +132,7 @@ async def change_full_name_start(msg: types.Message, state: FSMContext, **kwargs
         "<Фамилия Имя Отчество>",
         reply_markup=kb
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
     await state.set_state(ChangeUserData.waiting_for_full_name)
     return
@@ -158,7 +158,7 @@ async def process_full_name(msg: types.Message, state: FSMContext):
     parts = msg.text.split(maxsplit=3)
     if len(parts) > 3 or len(parts) < 2:
         sent = await msg.answer('Использование: <Фамилия Имя Отчество>', reply_markup=kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     full_name = msg.text
@@ -167,7 +167,7 @@ async def process_full_name(msg: types.Message, state: FSMContext):
         (full_name, msg.from_user.id)
     )
     sent = await msg.answer(f"✅ Ваше полное имя обновлено: {full_name}", reply_markup=kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
     await state.clear()
     return
@@ -190,7 +190,7 @@ async def show_my_data(msg: types.Message, **kwargs):
     row = await query('SELECT full_name, role, username, password FROM users WHERE telegram_id=?', (msg.from_user.id,), one=True)
     if not row:
         sent = await msg.answer("Сначала авторизуйтесь.", reply_markup=main)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     role_to_kb = {
@@ -208,7 +208,7 @@ async def show_my_data(msg: types.Message, **kwargs):
         f"Пароль: {row['password']}",
         reply_markup=kb
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
 

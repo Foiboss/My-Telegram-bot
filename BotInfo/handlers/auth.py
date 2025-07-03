@@ -1,32 +1,40 @@
 import os
 import sys
+
 from aiogram import types, Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import FSInputFile, ReplyKeyboardRemove
-from BotInfo.handlers.antispam import antispam
 
+from BotInfo.handlers.antispam import antispam
 from ..config import message_cooldown
-from ..utils import only_role
 from ..db import query, execute
-from ..keyboards import main, student_kb, curator_kb, admin_kb, lk_kb
+from ..keyboards import main, student_kb, curator_kb, admin_kb
+from ..utils import only_role
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 router_auth = Router()
 
 # Storing the bot's last message in the chat to delete messages
-last_bot_msg_del: dict[int, int] = {}
+last_bot_msg_del: dict[int, list[int]] = {}
 
 
 async def delete_prev(chat_id: int, bot: Bot):
-    msg_id = last_bot_msg_del.get(chat_id)
-    if msg_id:
+    msg_id = last_bot_msg_del.get(chat_id, [])
+    for mid in msg_id:
         try:
-            await bot.delete_message(chat_id, msg_id)
+            await bot.delete_message(chat_id, mid)
         except:
             pass
+
+
+def remember_bot_msg(chat_id: int, message_id: int, limit: int = 10):
+    lst = last_bot_msg_del.setdefault(chat_id, [])
+    lst.append(message_id)
+    if len(lst) > limit:
+        lst.pop(0)
 
 
 class AuthSG(StatesGroup):
@@ -62,7 +70,7 @@ async def cmd_start(msg: types.Message, **kwargs):
                 'чтобы твои коллеги могли тебя узнать! Там же ты можешь сменить и пароль от аккаунта',
         reply_markup=main
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # region User login
@@ -92,13 +100,13 @@ async def login_start(msg: types.Message, state: FSMContext, **kwargs):
             f'роль: {row["role"]}',
             reply_markup=kb
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     # start FSM logging in
     await state.set_state(AuthSG.login)
     sent = await msg.answer('Введите логин:', reply_markup=ReplyKeyboardRemove())
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # login step
@@ -110,7 +118,7 @@ async def process_login(msg: types.Message, state: FSMContext):
     await state.update_data(login=msg.text.strip())
     await state.set_state(AuthSG.password)
     sent = await msg.answer('Введите пароль:')
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # password step
@@ -136,7 +144,7 @@ async def process_password(msg: types.Message, state: FSMContext):
             'Неверный логин или пароль. Попробуйте снова.',
             reply_markup=main
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
     if user: # if found - login user and send welcome message
         role_key = user['role'].strip().lower()
@@ -145,7 +153,7 @@ async def process_password(msg: types.Message, state: FSMContext):
             f'Вы вошли как {user["role"]}',
             reply_markup=kb
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
 
         await execute(
             'UPDATE users SET telegram_id=? WHERE username=?',
@@ -168,4 +176,4 @@ async def logout(msg: types.Message, state: FSMContext, **kwargs):
     await state.clear()
     # 3) Remove the keyboard and send a reply
     sent = await msg.answer('Вы вышли из аккаунта', reply_markup=main)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)

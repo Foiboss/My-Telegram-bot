@@ -6,7 +6,7 @@ from aiogram.filters import Command
 from aiogram.types import FSInputFile
 from aiogram.types import ReplyKeyboardRemove
 from BotInfo.handlers.antispam import antispam
-from BotInfo.handlers.auth import delete_prev, last_bot_msg_del
+from BotInfo.handlers.auth import delete_prev, remember_bot_msg
 
 from ..config import message_cooldown
 from ..db import execute, query
@@ -38,7 +38,7 @@ async def admin_login(msg: types.Message, **kwargs):
         sent = await msg.answer(
             f'Нет прав. Ваш ID={uid}. Обратитесь к главному администратору (контактные данные), чтобы он добавил вас в whitelist.'
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     user_row = await query(
@@ -59,7 +59,7 @@ async def admin_login(msg: types.Message, **kwargs):
                                 f'логин: {user_row['username']}\n'
                                 f'ФИО: {user_row['full_name']}\n'
                                 f'Роль: {user_row['role']}\n', reply_markup=kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # function to log admin out
@@ -83,7 +83,7 @@ async def do_admin_logout(msg: types.Message):
             (uid,)
         )
         sent = await msg.answer('Вы вышли из аккаунта admin', reply_markup=main)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 
 # command version of logout
@@ -135,7 +135,7 @@ async def add_user_button(msg: types.Message, **kwargs):
                            'student - чтобы создать аккаунт для студента,\n'
                            'curator - чтобы создать аккаунт для куратора\n'
                            'Например: /gen_creds student 100 200', reply_markup=admin_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
 
@@ -153,19 +153,19 @@ async def gen_creds(msg: types.Message, **kwargs):
     parts = msg.text.split()
     if len(parts) < 4:
         sent = await msg.answer('Использование: /gen_creds <role> <FromID> <ToID>', reply_markup=admin_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
     role, from_str, to_str = parts[1], parts[2], parts[3]
 
     if not (from_str.isdigit() and to_str.isdigit()):
         sent = await msg.answer('FromID и ToID должны быть числами.', reply_markup=admin_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
     low, high = int(from_str), int(to_str)
 
     if low > high:
         sent = await msg.answer(f'Неверный диапазон: {low} > {high}', reply_markup=admin_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     # 1) we will find out in advance which logins are already in the DB
@@ -205,7 +205,7 @@ async def gen_creds(msg: types.Message, **kwargs):
             f"Новых учёток не создано. Все логины из диапазона {low}-{high} уже существуют.",
             reply_markup=admin_kb
         )
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     sent = await msg.answer_document(
@@ -216,7 +216,7 @@ async def gen_creds(msg: types.Message, **kwargs):
         ),
         reply_markup=admin_kb
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
     os.remove(tmp_path)
 
 
@@ -235,7 +235,7 @@ async def delete_user_button(msg: types.Message, **kwargs):
                            "/delete_users <from-to> [<from-to> ...]\n"
                            "Удалит пользователей с login в заданных диапазонах,в том числе удалит и их заявки\n"
                            "Например: /delete_users 100-200 1000-1344 50-150", reply_markup=admin_kb)
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
 
@@ -253,7 +253,7 @@ async def delete_users(msg: types.Message, **kwargs):
     tokens = msg.text.split()[1:]
     if not tokens:
         sent = await msg.answer("Использование: /delete_users <from-to> [<from-to> ...]", reply_markup=admin_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     def parse_range(token: str) -> tuple[int, int]:
@@ -271,7 +271,7 @@ async def delete_users(msg: types.Message, **kwargs):
         ranges = [parse_range(tok) for tok in tokens]
     except ValueError as e:
         sent = await msg.answer(str(e), reply_markup=admin_kb)
-        last_bot_msg_del[msg.chat.id] = sent.message_id
+        remember_bot_msg(msg.chat.id, sent.message_id)
         return
 
     total_users_deleted = 0
@@ -294,6 +294,6 @@ async def delete_users(msg: types.Message, **kwargs):
         f"Все заявки, связанные с этими пользователями также удалены",
         reply_markup=admin_kb
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
 
 # endregion

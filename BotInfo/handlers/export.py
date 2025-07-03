@@ -6,7 +6,7 @@ from aiogram import types, Router
 from aiogram.filters import Command
 from aiogram.types import BufferedInputFile
 from BotInfo.handlers.antispam import antispam
-from BotInfo.handlers.auth import delete_prev, last_bot_msg_del
+from BotInfo.handlers.auth import delete_prev, remember_bot_msg
 
 from ..config import export_cooldown
 from ..db import query
@@ -65,7 +65,7 @@ async def export_excel(msg: types.Message, **kwargs):
         caption='Экспорт данных пользователей в формате Excel',
         reply_markup=admin_kb
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
 # endregion
@@ -133,7 +133,7 @@ async def export_activities(msg: types.Message, **kwargs):
         caption='Экспорт данных заявок в формате Excel',
         reply_markup=admin_kb
     )
-    last_bot_msg_del[msg.chat.id] = sent.message_id
+    remember_bot_msg(msg.chat.id, sent.message_id)
     return
 
 # endregion
